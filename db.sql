@@ -11,16 +11,16 @@ CREATE TABLE Users (
     LastModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     password_hash VARCHAR(255) NOT NULL
 );*/
-CREATE TABLE Chipset_Compatibility (
+/*CREATE TABLE Chipset_Compatibility (
     Chipset VARCHAR(50) PRIMARY KEY,  
     SupportedCPUs JSON NOT NULL,
     SupportedRamTypes SET('DDR3', 'DDR4', 'DDR5') NOT NULL,
     MaxRamFrequencyMHZ int NOT NULL,
     MinPSUWatts int not null default 300
-);
-create table Custom_PC_Orders(
-Custom_PC_OrderID VARCHAR(20) GENERATED ALWAYS AS (CONCAT('PC', Build_No)) STORED,
-Build_No int auto_increment primary key,
+);*/
+/*create table Custom_PC_Orders(
+Build_No INT AUTO_INCREMENT PRIMARY KEY,  -- Auto-increment column
+    Custom_PC_OrderID VARCHAR(20) NOT NULL UNIQUE, 
 UserID int not null,
 CPU varchar(100) not null,
 GPU varchar(100) not null,
@@ -40,6 +40,15 @@ Last_Modified timestamp default current_timestamp on update current_timestamp,
 foreign key (UserID) references Users(UserNo) ON DELETE CASCADE,
 foreign key (Chipset) references Chipset_Compatibility(Chipset)
 );
+DELIMITER //
+CREATE TRIGGER before_insert_CustomPC
+BEFORE INSERT ON Custom_PC_Orders
+FOR EACH ROW
+BEGIN
+    SET NEW.Custom_PC_OrderID = CONCAT('PC', NEW.Build_No);
+END;
+//
+DELIMITER ;
 DELIMITER //
 CREATE TRIGGER Check_CPU_Chipset_Compatibility
 BEFORE INSERT ON Custom_PC_Orders
@@ -97,4 +106,4 @@ BEGIN
     END IF;
 END;
 //
-DELIMITER ;
+DELIMITER ;*/
