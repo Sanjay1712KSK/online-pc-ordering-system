@@ -13,12 +13,13 @@ CREATE TABLE Users (
 );*/
 CREATE TABLE Chipset_Compatibility (
     Chipset VARCHAR(50) PRIMARY KEY,  
-    SupportedCPUs TEXT NOT NULL,
-    SupportedRamTypes TEXT not null,
-    MaxRamFrequencyINmHZ int NOT NULL
+    SupportedCPUs JSON NOT NULL,
+    SupportedRamTypes SET('DDR3', 'DDR4', 'DDR5') NOT NULL,
+    MaxRamFrequencyMHZ int NOT NULL,
+    MinPSUWatts int not null default 300
 );
 create table Custom_PC_Orders(
-Custom_PC_OrderID int unique default (FLOOR(RAND() * (999999 - 100000 + 1)) + 100000),
+Custom_PC_OrderID VARCHAR(20) GENERATED ALWAYS AS (CONCAT('PC', Build_No)) STORED,
 Build_No int auto_increment primary key,
 UserID int not null,
 CPU varchar(100) not null,
@@ -30,9 +31,10 @@ PrimaryStorage varchar(100) not null,
 SecondaryStorage varchar(100) null,
 PSU varchar(100) not null,
 Cooling varchar(100) not null,
-Case varchar(100) not null,
-AdditionalParts TEXT null,
-TotalPrice DECIMAL(10,2),
+`Case` varchar(100) not null,
+AdditionalParts JSON null,
+FULLTEXT (CPU, GPU, Motherboard),
+TotalPrice DECIMAL(10,2) CONSTRAINT chk_TotalPrice CHECK (TotalPrice >= 0),
 VirtualBuildDate timestamp default current_timestamp,
 Last_Modified timestamp default current_timestamp on update current_timestamp,
 foreign key (UserID) references Users(UserNo) ON DELETE CASCADE,
@@ -43,12 +45,12 @@ CREATE TRIGGER Check_CPU_Chipset_Compatibility
 BEFORE INSERT ON Custom_PC_Orders
 FOR EACH ROW
 BEGIN
-    DECLARE valid_cpu TEXT;
+    DECLARE valid_cpu JSON;
     SELECT SupportedCPUs 
     INTO valid_cpu
     FROM Chipset_Compatibility 
     WHERE Chipset = NEW.Chipset;
-    IF NOT FIND_IN_SET(NEW.CPU, valid_cpu) THEN
+    IF JSON_SEARCH(valid_cpu, 'one', NEW.CPU) IS NULL THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Selected CPU is not compatible with the chipset!';
     END IF;
@@ -61,8 +63,8 @@ BEFORE INSERT ON Custom_PC_Orders
 FOR EACH ROW
 BEGIN
     DECLARE max_freq INT;
-    DECLARE ram_type VARCHAR(10);
-    SELECT MaxRAMFrequency, SupportedRAMTypes 
+    DECLARE ram_type VARCHAR(50);
+    SELECT MaxRamFrequencyMHZ, SupportedRamTypes 
     INTO max_freq, ram_type
     FROM Chipset_Compatibility 
     WHERE Chipset = NEW.Chipset;
@@ -70,13 +72,29 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Selected RAM exceeds chipset max frequency!';
     END IF;
-    IF NOT FIND_IN_SET(SUBSTRING_INDEX(NEW.RAM, ' ', 1), ram_type) THEN
+    IF FIND_IN_SET(SUBSTRING_INDEX(NEW.RAM, ' ', 1), ram_type) = 0 THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Selected RAM type is not compatible with the chipset!';
     END IF;
-
 END;
 //
 DELIMITER ;
-
-
+DELIMITER //
+CREATE TRIGGER Check_PSU_Wattage
+BEFORE INSERT ON Custom_PC_Orders
+FOR EACH ROW
+BEGIN
+    DECLARE min_watts INT;
+    DECLARE psu_watts INT;
+    SELECT MinPSUWatts 
+    INTO min_watts
+    FROM Chipset_Compatibility 
+    WHERE Chipset = NEW.Chipset;
+    SET psu_watts = COALESCE(CAST(REGEXP_SUBSTR(NEW.PSU, '[0-9]+') AS UNSIGNED), 0);
+    IF psu_watts < min_watts THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Selected PSU does not meet the minimum wattage requirement!';
+    END IF;
+END;
+//
+DELIMITER ;
