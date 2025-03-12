@@ -140,7 +140,7 @@ ALTER TABLE Custom_PC_Orders ADD INDEX idx_Chipset (Chipset);
 ALTER TABLE Users ADD INDEX idx_PhoneNo (PhoneNo);
 ALTER TABLE Custom_PC_Orders MODIFY COLUMN SecondaryStorage VARCHAR(100) DEFAULT 'None';
 */
-CREATE TABLE Use_Cases (
+/*CREATE TABLE Use_Cases (
     UseCase_ID INT AUTO_INCREMENT PRIMARY KEY,
     UseCase_Name VARCHAR(255) NOT NULL UNIQUE,
     Metadata JSON NOT NULL
@@ -306,4 +306,4 @@ INSERT INTO Predefined_PC_Builds (UseCase_ID, UserID, Build_Name, Components, To
     'RAM', '256GB DDR5 ECC',
     'PrimaryStorage', '8TB NVMe SSD + 10TB HDD',
     'PSU', '1500W Titanium'
- ), 12000.00);
+ ), 12000.00);*/
