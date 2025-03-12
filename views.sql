@@ -20,3 +20,11 @@ SELECT
     C.VirtualBuildDate
 FROM Custom_PC_Orders C
 JOIN Users U ON C.UserID = U.UserNo;
+CREATE VIEW Customer_Orders_View AS
+SELECT 
+    c.Custom_PC_OrderID, 
+    u.Name AS Customer_Name, 
+    c.CPU, c.GPU, c.Motherboard, c.RAM, 
+    c.TotalPrice, c.VirtualBuildDate
+FROM Custom_PC_Orders c
+JOIN Users u ON c.UserID = u.UserNo;
