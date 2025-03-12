@@ -1,0 +1,4 @@
+-- Demo VALUE Insertion
+-- insert into Users(Name,Age,Address,gender,PhoneNo,password_hash)values("Sanjay Kumar S",19,"1/235 xyz street,city","Male","+919487044111",sha2('1712',256));
+-- To verify password
+-- SELECT * FROM Users WHERE PhoneNo = "<Your value here>" AND password_hash = SHA2(<Your password here>, 256);
