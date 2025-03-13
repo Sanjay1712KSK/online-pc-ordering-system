@@ -241,8 +241,8 @@ CREATE TABLE Predefined_PC_Builds (
     INDEX idx_psu (PSU),
     INDEX idx_monitor (Monitor),
     INDEX idx_accessories (Accessories)
-);
-INSERT INTO Predefined_PC_Builds (UseCase_ID, UserID, Build_Name, Components, TotalPrice) VALUES
+);*/
+/*INSERT INTO Predefined_PC_Builds (UseCase_ID, UserID, Build_Name, Components, TotalPrice) VALUES
 (1, 1, 'Basic Office PC', 
  JSON_OBJECT(
     'CPU', 'Intel Core i3-13100',
